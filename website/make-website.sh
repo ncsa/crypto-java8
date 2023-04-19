@@ -19,4 +19,4 @@ mvn clean site
 # Note the source directory in the next command has no apidocs subdirectory, so this overlays
 # without overwriting.
 cp -r $CRYPT8_ROOT/website/target/site/* $WEBSITE_ROOT # copy maven site
-cp -r $CRYPT8_ROOT/crypt8/target/site/* $WEBSITE_ROOT   # copy javadoc in toto
+cp -r $CRYPT8_ROOT/target/site/* $WEBSITE_ROOT   # copy javadoc in toto
