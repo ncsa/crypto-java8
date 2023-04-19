@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="Maven" xmlns="http://maven.apache.org/DECORATION/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+  <bannerLeft>
+      <name>NCSA</name>
+      <src>css/images/ncsa-logo-sm-2.gif</src>
+      <href>http://www.ncsa.illinois.edu/</href>
+  </bannerLeft>
+  <bannerRight>
+      <name>Crypt8</name>
+      <src>css/images/crypt-8-sm-1.png</src>
+      <href>https://ncsa.github.io/crypto-java8/</href>
+  </bannerRight>
+  <version position="right"/>
+  <skin>
+      <groupId>edu.uiuc.ncsa.security.crypt8.skin</groupId>
+      <artifactId>skin</artifactId>
+      <version>5.3-SNAPSHOT</version>
+  </skin>
+  <body>
+      <menu name="Crypt8">
+          <item name="Overview" href="server/index.html"/>
+          <item name="Server" href="server/index.html"/>
+          <item name="Client" href="client/index.html"/>
+          <item name="api docs" href="apidocs/index.html"/>
+      </menu>
+      <menu ref="reports"/>
+  </body>
+</project>

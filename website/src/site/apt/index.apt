@@ -1,0 +1,22 @@
+ -----
+ Cryptographic Library for Java 8
+ -----
+ Jeff Gaynor
+ -----
+ Jun 15, 2010
+
+ -----
+
+Cryptographic Library for Java 8
+
+  This is a cryptographic/security library that is based on Java 8. IN Java 8, there
+  was access to internal Java security classes which were moved then hidden in later
+  Java releases. This will let you work with various certificate formats,
+  create certificate requests, manage public and private keys and a bunch of other
+  extremely useful things. There is an astonishingly dearth of good software for this
+  in the Java world.
+
+Uses
+
+  Just use this as a dependency in your project. You should not build this since it
+  is tricky to do so correctly.

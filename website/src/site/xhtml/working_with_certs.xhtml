@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>Working with X.509 Certificates</title>
+    <!--#include virtual="../head.html" -->
+</head>
+
+<body class="composite">
+<!--#include virtual="../header.html"-->
+<h1>Working with X.509 Certificates</h1>
+<p>X.509 certs are a standard feature of the web. It is past this blurb to give you
+a tutorial on them, but this will show you how to use the Crypt8 suite of tools
+to generate them.</p>
+<h2>Lifecycle</h2>
+<p>The normal lifecycle consists of making </p>
+<ul>
+    <li>A public/private keypair</li>
+    <li>A certification request (PKCS 10)</li>
+    <li>Requesting the certificate from a certificate authority (CA) by sending the PEM encoded PKCS 10 request.</li>
+    <li>Interpreting the response from the CA.</li>
+</ul>
+<p>You must store the key pair for later use since the certificate will be useless without them.</p>
+<!--#include virtual="../footer.html" -->
+</body>
+</html>
