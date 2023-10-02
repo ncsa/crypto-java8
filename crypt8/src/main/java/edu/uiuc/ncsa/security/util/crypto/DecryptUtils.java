@@ -60,7 +60,6 @@ public class DecryptUtils {
      *
      * @param publicKey
      * @param s
-     * @return
      * @throws InvalidKeyException
      * @throws NoSuchPaddingException
      * @throws NoSuchAlgorithmException
@@ -80,7 +79,6 @@ public class DecryptUtils {
      *
      * @param publicKey
      * @param s
-     * @return
      * @throws InvalidKeyException
      * @throws NoSuchPaddingException
      * @throws NoSuchAlgorithmException
@@ -102,7 +100,6 @@ public class DecryptUtils {
      *
      * @param privateKey
      * @param s
-     * @return
      */
     public static String encryptPrivate(PrivateKey privateKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException {
         Cipher encryptCipher = Cipher.getInstance("RSA");
@@ -120,7 +117,6 @@ public class DecryptUtils {
      *
      * @param privateKey
      * @param s
-     * @return
      * @throws InvalidKeyException
      * @throws NoSuchPaddingException
      * @throws NoSuchAlgorithmException
@@ -143,7 +139,6 @@ public class DecryptUtils {
      *
      * @param key
      * @param ss The target string as bytes
-     * @return
      */
     public static byte[] rawEncrypt(byte[] key, byte[] ss) {
         //byte[] ss = s.getBytes(StandardCharsets.UTF_8);
@@ -166,7 +161,6 @@ public class DecryptUtils {
      *
      * @param key
      * @param originalString
-     * @return
      */
     public static String sEncrypt(byte[] key, String originalString) {
         return Base64.encodeBase64URLSafeString(rawEncrypt(key, originalString.getBytes(StandardCharsets.UTF_8)));
@@ -176,7 +170,6 @@ public class DecryptUtils {
      * Takes the base 64 encrypted byte string and decrypts it, returning the original string.
      * @param key
      * @param s64
-     * @return
      */
     public static String sDecrypt(byte[] key, String s64) {
         try {

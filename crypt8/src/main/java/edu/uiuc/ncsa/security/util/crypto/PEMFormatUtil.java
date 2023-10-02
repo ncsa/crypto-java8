@@ -16,7 +16,6 @@ public class PEMFormatUtil {
      * @param pem
      * @param head
      * @param tail
-     * @return
      */
     public static String getBody(String pem, String head, String tail) {
         // Be forgiving of trailing whitespace and line feeds
@@ -43,7 +42,6 @@ public class PEMFormatUtil {
      * @param pem
      * @param head
      * @param tail
-     * @return
      */
     public static byte[] getBodyBytes(String pem, String head, String tail) {
         return Base64.decodeBase64(getBody(pem, head, tail));
@@ -55,7 +53,6 @@ public class PEMFormatUtil {
      * @param body
      * @param head
      * @param tail
-     * @return
      */
     public static String delimitBody(byte[] body, String head, String tail) {
         return delimitBody(bytesToChunkedString(body), head, tail);
@@ -69,7 +66,6 @@ public class PEMFormatUtil {
      * @param body
      * @param head
      * @param tail
-     * @return
      */
     public static String delimitBody(String body, String head, String tail) {
         StringWriter sw = new StringWriter();
@@ -93,7 +89,6 @@ public class PEMFormatUtil {
      * Fixes OAUTH-212: upgrade to version 1.10 of apache commons no longer chunks strings, so PEM format of
      * all keys and certs are no longer readable by Open SSL, e.g.
      * @param body
-     * @return
      */
     public static String bytesToChunkedString(byte[] body){
         byte[] out = Base64.encodeBase64Chunked(body);
@@ -148,7 +143,6 @@ public class PEMFormatUtil {
      * base64 decoder.
      *
      * @param f
-     * @return
      * @throws IOException
      */
     public static String readerToString(Reader f) throws IOException {
