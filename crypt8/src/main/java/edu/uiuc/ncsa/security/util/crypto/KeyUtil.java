@@ -129,8 +129,9 @@ public class KeyUtil {
     }
 
     /**
-     * Verifies that a given keypair is correct.
-     * A positive result means they are <i>most likely</i> correct. A failure
+     * Verifies that a given keypair is correct, i.e., that the public and private keys
+     * are in fact paired correctly.<br/><br/>
+     * <b>N.B:</b> A positive result means they are <i>most likely</i> correct. A failure
      * means they most certainly do not match.
      *
      * @param keyPair
@@ -358,7 +359,7 @@ public class KeyUtil {
     static int keyLength = 2048;
 
     /**
-     * Create the correct key pair geenrator for this suite.
+     * Create and set the keypair generator  for this suite using the current key algorithm (default is RSA).
      * @return
      */
     public static KeyPairGenerator getKeyPairGenerator() {
@@ -372,6 +373,7 @@ public class KeyUtil {
         }
         return keyPairGenerator;
     }
+
 
     /**
      * If you have some specific keypair generator you need to use, you can set it here,
@@ -408,7 +410,7 @@ public class KeyUtil {
     protected static KeyFactory keyFactory;
 
     /**
-     * Create the correct Key factory for this suite.
+     * Create and set key factory for this suite using the current key algorithm default is RSA.
      * @return
      */
     public static KeyFactory getKeyFactory() {
@@ -422,6 +424,21 @@ public class KeyUtil {
         return keyFactory;
     }
 
+    /**
+     * Create and set the key factory for this suite using the given algorithm.
+     * @param keyAlgorithm
+     * @return
+     */
+    public static KeyFactory getKeyFactory(String keyAlgorithm) {
+        if (keyFactory == null) {
+            try {
+                keyFactory = KeyFactory.getInstance(keyAlgorithm);
+            } catch (NoSuchAlgorithmException e) {
+                throw new CryptoException(e);
+            }
+        }
+        return keyFactory;
+    }
     /**
      * Ingest a PKCS 8 format PEM via a reader.
      * @param reader
@@ -456,5 +473,11 @@ public class KeyUtil {
         byte[] key = new byte[length];
         secureRandom.nextBytes(key);
         return key;
+    }
+
+    public static void main(String[] args) {
+        setKeyAlgorithm("EC");
+        KeyPair keyPair = generateKeyPair();
+        System.out.println(keyPair);
     }
 }
