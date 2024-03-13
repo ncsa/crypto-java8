@@ -68,6 +68,7 @@ public class KeyUtil {
     /**
      * Take a private key and put it into PKCS 1 format. These are used, e.g., by OpenSSL.
      *
+     * @return
      * @throws IOException
      */
     public static String toPKCS1PEM(PrivateKey privateKey) throws IOException {
@@ -79,6 +80,7 @@ public class KeyUtil {
     /**
      * Use a reader to ingest a PKCS 1 private key.
      * @param reader
+     * @return
      * @throws Exception
      */
     public static PrivateKey fromPKCS1PEM(Reader reader) throws Exception {
@@ -90,6 +92,7 @@ public class KeyUtil {
      * Read a PKCS 1 format pem and return the private key.  Read the <a href="https://www.rfc-editor.org/rfc/rfc3447#page-44">RSA spec</a>
      *
      * @param pem
+     * @return
      * @throws Exception
      */
     public static PrivateKey fromPKCS1PEM(String pem) throws Exception {
@@ -118,6 +121,7 @@ public class KeyUtil {
     /**
      * Ingest a keypair that has been encoded in PKCS 1 format using a reader.
      * @param r
+     * @return
      * @throws Exception
      */
     public static KeyPair keyPairFromPKCS1(Reader r) throws Exception {
@@ -125,11 +129,13 @@ public class KeyUtil {
     }
 
     /**
-     * Verifies that a given keypair is correct.
-     * A positive result means they are <i>most likely</i> correct. A failure
+     * Verifies that a given keypair is correct, i.e., that the public and private keys
+     * are in fact paired correctly.<br/><br/>
+     * <b>N.B:</b> A positive result means they are <i>most likely</i> correct. A failure
      * means they most certainly do not match.
      *
      * @param keyPair
+     * @return
      */
     public static boolean validateKeyPair(KeyPair keyPair) throws Exception {
         return validateKeyPair(keyPair.getPublic(), keyPair.getPrivate());
@@ -140,6 +146,7 @@ public class KeyUtil {
      *
      * @param publicKey
      * @param privateKey
+     * @return
      * @throws Exception
      */
     public static boolean validateKeyPair(PublicKey publicKey, PrivateKey privateKey) throws Exception {
@@ -163,6 +170,7 @@ public class KeyUtil {
      * Read a PKCS 1 key in and generate the keypair from it.
      *
      * @param pem
+     * @return
      * @throws Exception
      */
     public static KeyPair keyPairFromPKCS1(String pem) throws Exception {
@@ -204,6 +212,7 @@ public class KeyUtil {
     /**
      * Convert public key to PEM format, returning the result as a string.
      * @param publicKey
+     * @return
      */
     public static String toX509PEM(PublicKey publicKey) {
         byte[] bytes = publicKey.getEncoded();
@@ -214,6 +223,7 @@ public class KeyUtil {
      * DER encoding for the private key.
      *
      * @param privateKey
+     * @return
      */
     public static byte[] toDER(PrivateKey privateKey) {
         return privateKey.getEncoded();
@@ -222,6 +232,7 @@ public class KeyUtil {
     /**
      * DER encode a public key.
      * @param publicKey
+     * @return
      */
     public static byte[] toDER(PublicKey publicKey) {
         return publicKey.getEncoded();
@@ -231,6 +242,7 @@ public class KeyUtil {
     /**
      * DER encode the private key of a {@link KeyPair}.
      * @param keyPair
+     * @return
      */
     public static byte[] privateToDER(KeyPair keyPair) {
         return toDER(keyPair.getPrivate());
@@ -239,6 +251,7 @@ public class KeyUtil {
     /**
      * DER encode the public key in a {@link KeyPair}.
      * @param keyPair
+     * @return
      */
 
     public static byte[] publicToDER(KeyPair keyPair) {
@@ -260,6 +273,7 @@ public class KeyUtil {
      * utility. If you use this on a key in the wrong format you will get an exception.
      *
      * @param encodedPrivate
+     * @return
      */
     public static PrivateKey fromPKCS8DER(byte[] encodedPrivate) {
         PKCS8EncodedKeySpec encodedPrivatePKCS8 = new PKCS8EncodedKeySpec(encodedPrivate);
@@ -273,6 +287,7 @@ public class KeyUtil {
     /**
      * Convert a private key to PKCS 8 format, returning the resulting PEM as a string.
      * @param privateKey
+     * @return
      */
 
     public static String toPKCS8PEM(PrivateKey privateKey) {
@@ -299,6 +314,7 @@ public class KeyUtil {
      * </code><br><br>
      *
      * @param pem
+     * @return
      */
     public static PrivateKey fromPKCS8PEM(String pem) {
         return fromPKCS8DER(PEMFormatUtil.getBodyBytes(pem, BEGIN_PRIVATE_KEY, END_PRIVATE_KEY));
@@ -308,6 +324,7 @@ public class KeyUtil {
      * Public keys are encoded with the X509 public key spec.
      *
      * @param encodedPublic
+     * @return
      */
     public static PublicKey fromX509PEM(String encodedPublic) {
         return fromX509DER(PEMFormatUtil.getBodyBytes(encodedPublic, BEGIN_PUBLIC_KEY, END_PUBLIC_KEY));
@@ -316,6 +333,7 @@ public class KeyUtil {
     /**
      * Convert a DER encoded public key to a {@link PublicKey};
      * @param encodedPublic
+     * @return
      */
     public static PublicKey fromX509DER(byte[] encodedPublic) {
         X509EncodedKeySpec x = new X509EncodedKeySpec(encodedPublic);
@@ -328,6 +346,7 @@ public class KeyUtil {
 
     /**
      * Gets the key length (default is 2048 bits).
+     * @return
      */
     public static int getKeyLength() {
         return keyLength;
@@ -340,7 +359,8 @@ public class KeyUtil {
     static int keyLength = 2048;
 
     /**
-     * Create the correct key pair geenrator for this suite.
+     * Create and set the keypair generator  for this suite using the current key algorithm (default is RSA).
+     * @return
      */
     public static KeyPairGenerator getKeyPairGenerator() {
         if (keyPairGenerator == null) {
@@ -353,6 +373,7 @@ public class KeyUtil {
         }
         return keyPairGenerator;
     }
+
 
     /**
      * If you have some specific keypair generator you need to use, you can set it here,
@@ -367,6 +388,7 @@ public class KeyUtil {
 
     /**
      * Generate a {@link KeyPair}
+     * @return
      */
     public static KeyPair generateKeyPair() {
         return getKeyPairGenerator().generateKeyPair();
@@ -374,6 +396,7 @@ public class KeyUtil {
 
     /**
      * Return the current key algorithm.  Default is RSA.
+     * @return
      */
     public static String getKeyAlgorithm() {
         return keyAlgorithm;
@@ -387,7 +410,8 @@ public class KeyUtil {
     protected static KeyFactory keyFactory;
 
     /**
-     * Create the correct Key factory for this suite.
+     * Create and set key factory for this suite using the current key algorithm default is RSA.
+     * @return
      */
     public static KeyFactory getKeyFactory() {
         if (keyFactory == null) {
@@ -401,8 +425,24 @@ public class KeyUtil {
     }
 
     /**
+     * Create and set the key factory for this suite using the given algorithm.
+     * @param keyAlgorithm
+     * @return
+     */
+    public static KeyFactory getKeyFactory(String keyAlgorithm) {
+        if (keyFactory == null) {
+            try {
+                keyFactory = KeyFactory.getInstance(keyAlgorithm);
+            } catch (NoSuchAlgorithmException e) {
+                throw new CryptoException(e);
+            }
+        }
+        return keyFactory;
+    }
+    /**
      * Ingest a PKCS 8 format PEM via a reader.
      * @param reader
+     * @return
      * @throws IOException
      */
     public static PrivateKey fromPKCS8PEM(Reader reader) throws IOException {
@@ -412,6 +452,7 @@ public class KeyUtil {
     /**
      * Ingest the public key in an X 509 PEM via a reader.
      * @param reader
+     * @return
      * @throws IOException
      */
     public static PublicKey fromX509PEM(Reader reader) throws IOException {
@@ -425,11 +466,18 @@ public class KeyUtil {
      *     byte[] sKey = generateSKey(4096/8);
      * </pre>
      * @param length
+     * @return
      */
     public static byte[] generateSKey(int length) {
         SecureRandom secureRandom = new SecureRandom();
         byte[] key = new byte[length];
         secureRandom.nextBytes(key);
         return key;
+    }
+
+    public static void main(String[] args) {
+        setKeyAlgorithm("EC");
+        KeyPair keyPair = generateKeyPair();
+        System.out.println(keyPair);
     }
 }

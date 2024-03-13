@@ -5,12 +5,13 @@
     <parent>
         <artifactId>security-lib</artifactId>
         <groupId>edu.uiuc.ncsa.security</groupId>
-        <version>5.2.8</version>
+        <version>5.4.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>crypto-java8</artifactId>
     <packaging>pom</packaging>
+    <version>5.4-CANL</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

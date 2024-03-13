@@ -60,6 +60,7 @@ public class DecryptUtils {
      *
      * @param publicKey
      * @param s
+     * @return
      * @throws InvalidKeyException
      * @throws NoSuchPaddingException
      * @throws NoSuchAlgorithmException
@@ -67,7 +68,11 @@ public class DecryptUtils {
      * @throws BadPaddingException
      */
     public static String encryptPublic(PublicKey publicKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException {
-        Cipher encryptCipher = Cipher.getInstance("RSA");
+        return encryptPublic("RSA", publicKey, s);
+    }
+
+    public static String encryptPublic(String type, PublicKey publicKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException {
+        Cipher encryptCipher = Cipher.getInstance(type.equals("RSA")?"RSA":"AES/GCM/NoPadding");
         encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey); // encrypt with the public key
         byte[] encryptedMessageBytes = encryptCipher.doFinal(s.getBytes(StandardCharsets.UTF_8));
         String encoded = Base64.encodeBase64URLSafeString(encryptedMessageBytes);
@@ -86,9 +91,12 @@ public class DecryptUtils {
      * @throws BadPaddingException
      */
     public static String decryptPublic(PublicKey publicKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
-        byte[] rawBytes = Base64.decodeBase64(s);
+        return decryptPublic("RSA", publicKey, s);
+    }
 
-        Cipher decryptCipher = Cipher.getInstance("RSA");
+    public static String decryptPublic(String type, PublicKey publicKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
+        byte[] rawBytes = Base64.decodeBase64(s);
+        Cipher decryptCipher = Cipher.getInstance(type);
         decryptCipher.init(Cipher.DECRYPT_MODE, publicKey); // encrypt with the public key
         byte[] decryptedMessageBytes = decryptCipher.doFinal(rawBytes);
         return new String(decryptedMessageBytes, "UTF-8");
@@ -100,9 +108,14 @@ public class DecryptUtils {
      *
      * @param privateKey
      * @param s
+     * @return
      */
     public static String encryptPrivate(PrivateKey privateKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException {
-        Cipher encryptCipher = Cipher.getInstance("RSA");
+        return encryptPrivate("RSA", privateKey, s);
+    }
+
+    public static String encryptPrivate(String type, PrivateKey privateKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException {
+        Cipher encryptCipher = Cipher.getInstance(type);
         encryptCipher.init(Cipher.ENCRYPT_MODE, privateKey); // encrypt with the public key
         byte[] encryptedMessageBytes = encryptCipher.doFinal(s.getBytes(StandardCharsets.UTF_8));
         String encoded = Base64.encodeBase64URLSafeString(encryptedMessageBytes);
@@ -117,6 +130,7 @@ public class DecryptUtils {
      *
      * @param privateKey
      * @param s
+     * @return
      * @throws InvalidKeyException
      * @throws NoSuchPaddingException
      * @throws NoSuchAlgorithmException
@@ -124,21 +138,24 @@ public class DecryptUtils {
      * @throws BadPaddingException
      * @throws UnsupportedEncodingException
      */
-    public static String decryptPrivate(PrivateKey privateKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
-        byte[] rawBytes = Base64.decodeBase64(s);
-
-        Cipher decryptCipher = Cipher.getInstance("RSA");
+    public static String decryptPrivate(String type, PrivateKey privateKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
+        Cipher decryptCipher = Cipher.getInstance(type);
         decryptCipher.init(Cipher.DECRYPT_MODE, privateKey); // encrypt with the public key
+        byte[] rawBytes = Base64.decodeBase64(s);
         byte[] decryptedMessageBytes = decryptCipher.doFinal(rawBytes);
         return new String(decryptedMessageBytes, "UTF-8");
+    }
 
+    public static String decryptPrivate(PrivateKey privateKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
+        return decryptPrivate("RSA", privateKey, s);
     }
 
     /**
      * Symmetric key encryption.
      *
      * @param key
-     * @param ss The target string as bytes
+     * @param ss  The target string as bytes
+     * @return
      */
     public static byte[] rawEncrypt(byte[] key, byte[] ss) {
         //byte[] ss = s.getBytes(StandardCharsets.UTF_8);
@@ -161,6 +178,7 @@ public class DecryptUtils {
      *
      * @param key
      * @param originalString
+     * @return
      */
     public static String sEncrypt(byte[] key, String originalString) {
         return Base64.encodeBase64URLSafeString(rawEncrypt(key, originalString.getBytes(StandardCharsets.UTF_8)));
@@ -170,6 +188,7 @@ public class DecryptUtils {
      * Takes the base 64 encrypted byte string and decrypts it, returning the original string.
      * @param key
      * @param s64
+     * @return
      */
     public static String sDecrypt(byte[] key, String s64) {
         try {

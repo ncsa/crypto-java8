@@ -58,6 +58,7 @@ public class CertUtil {
      * @param certList
      * @param nameList The array of file names corresponding to each cert. This is only used to generate error messages
      *                 and if it is omitted will not otherwise effect function.
+     * @return
      * @throws CertificateException
      */
     public static X509Certificate[] getX509CertsFromStringList(
@@ -132,6 +133,7 @@ public class CertUtil {
      * persisted, e.g., with a database as a string.
      *
      * @param certString
+     * @return
      * @throws CertificateException
      */
     public static X509Certificate[] fromX509PEM(String certString) throws CertificateException {
@@ -148,6 +150,7 @@ public class CertUtil {
     /**
      * Convert a stream of X 509 certificates into an array of them.
      * @param inputStream
+     * @return
      * @throws CertificateException
      */
     public static X509Certificate[] fromPEM(InputStream inputStream) throws CertificateException {
@@ -159,6 +162,7 @@ public class CertUtil {
 
     /**
      * Create the correct factory for X 509 certificates.
+     * @return
      * @throws CertificateException
      */
     public static CertificateFactory getCertFactory() throws CertificateException {
@@ -175,6 +179,7 @@ public class CertUtil {
      * Encode an X 509 cert to PEM format.
      *
      * @param x509Certificate
+     * @return
      */
     public static String toPEM(X509Certificate x509Certificate) {
         try {
@@ -203,6 +208,7 @@ public class CertUtil {
     /**
      * Convert a collection of X 509 certificates to to PKCS 12 format.
      * @param x509Certificates
+     * @return
      */
     public static String toPEM(Collection<X509Certificate> x509Certificates) {
         X509Certificate[] certs = new X509Certificate[x509Certificates.size()];
@@ -247,6 +253,7 @@ public class CertUtil {
     /**
      *   Convert a set of X 509 certificates to PEM format.
      * @param x509Certificates
+     * @return
      */
     public static String toPEM(X509Certificate[] x509Certificates) {
         StringBuffer stringBuffer = new StringBuffer();
@@ -268,6 +275,7 @@ public class CertUtil {
      *
      * @param keypair
      * @param dn
+     * @return
      * @throws SignatureException
      * @throws NoSuchProviderException
      * @throws InvalidKeyException
@@ -282,6 +290,7 @@ public class CertUtil {
      * Create a certification request with the default distinguished name
      *
      * @param keypair
+     * @return
      * @throws SignatureException
      * @throws NoSuchProviderException
      * @throws InvalidKeyException
@@ -298,7 +307,8 @@ public class CertUtil {
      * @param keypair
      * @param sigAlgName
      * @param dn
-     * @param provider
+     * @return
+     * @throws SignatureException
      * @throws InvalidKeyException
      * @throws NoSuchAlgorithmException
      */
@@ -394,6 +404,7 @@ public class CertUtil {
 
         /**
          * Get the CN (Common Name) from the PKCS 10 cert request.
+         * @return
          */
         @Override
         public String getCN() {
@@ -409,6 +420,7 @@ public class CertUtil {
 
         /**
          * return the public key for the PKCS 10 cert request.
+         * @return
          */
         @Override
         public PublicKey getPublicKey() {
@@ -417,6 +429,7 @@ public class CertUtil {
 
         /**
          * Return the PKCS 10 cert request encoded as bytes.
+         * @return
          */
         @Override
         public byte[] getEncoded() {
@@ -427,6 +440,7 @@ public class CertUtil {
     /**
      * Get the DN (distinguished name) from the X 509 certificate.
      * @param x509Certificate
+     * @return
      */
     public static String getDN(X509Certificate x509Certificate) {
         return x509Certificate.getSubjectDN().getName();
@@ -438,6 +452,7 @@ public class CertUtil {
      * returning either a null if no such item exists or the value.
      *
      * @param x509Certificate
+     * @return
      */
     public static String getEPPN(X509Certificate x509Certificate) {
         byte[] rawEPPN = x509Certificate.getExtensionValue("1.3.6.1.4.1.5923.1.1.1.6");
@@ -452,6 +467,7 @@ public class CertUtil {
     /**
      * Return the email (if any) from an X 509 certificate.
      * @param x509Certificate
+     * @return
      */
     public static String getEmail(X509Certificate x509Certificate) {
         Collection<List<?>> collection = null;

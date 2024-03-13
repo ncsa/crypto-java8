@@ -11,16 +11,19 @@ import java.security.PublicKey;
 public abstract class MyPKCS10CertRequest {
     /**
      * Get this as a DER encoded byte array.
+     * @return
      */
     abstract public byte[] getEncoded();
 
     /**
      * Return the current public key
+     * @return
      */
     abstract public PublicKey getPublicKey();
 
     /**
      * Get the CN (Common Name) for this cert request.
+     * @return
      */
     abstract public String getCN();
 }
