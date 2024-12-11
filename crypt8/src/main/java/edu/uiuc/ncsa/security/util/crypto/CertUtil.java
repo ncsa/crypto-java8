@@ -62,7 +62,7 @@ public class CertUtil {
      * @throws CertificateException
      */
     public static X509Certificate[] getX509CertsFromStringList(
-            String[] certList, String[] nameList)  {
+            String[] certList, String[] nameList) {
         Collection<X509Certificate> c = new ArrayList<X509Certificate>(
                 certList.length);
         for (int i = 0; i < certList.length; i++) {
@@ -121,6 +121,7 @@ public class CertUtil {
 
     /**
      * Convert a PKCS 10 cert request to a string.
+     *
      * @param certReq
      * @return
      */
@@ -150,6 +151,7 @@ public class CertUtil {
 
     /**
      * Convert a stream of X 509 certificates into an array of them.
+     *
      * @param inputStream
      * @return
      * @throws CertificateException
@@ -163,6 +165,7 @@ public class CertUtil {
 
     /**
      * Create the correct factory for X 509 certificates.
+     *
      * @return
      * @throws CertificateException
      */
@@ -197,6 +200,7 @@ public class CertUtil {
 
     /**
      * Encode the certificates with the default (PKCS 12) format.
+     *
      * @param x509Certificates
      * @param out
      */
@@ -208,6 +212,7 @@ public class CertUtil {
 
     /**
      * Convert a collection of X 509 certificates to to PKCS 12 format.
+     *
      * @param x509Certificates
      * @return
      */
@@ -219,6 +224,7 @@ public class CertUtil {
 
     /**
      * Convert an array of X 509 certificates to PKCS 12 format and send to a stream.
+     *
      * @param x509Certificates
      * @param out
      */
@@ -231,6 +237,7 @@ public class CertUtil {
 
     /**
      * Encode a certificate in PKCS 7 format.
+     *
      * @param certs
      * @param out
      * @throws CertificateException
@@ -252,7 +259,8 @@ public class CertUtil {
     }
 
     /**
-     *   Convert a set of X 509 certificates to PEM format.
+     * Convert a set of X 509 certificates to PEM format.
+     *
      * @param x509Certificates
      * @return
      */
@@ -284,7 +292,7 @@ public class CertUtil {
      * @throws IOException
      */
     public static MyPKCS10CertRequest createCertRequest(KeyPair keypair, String dn) throws InvalidKeyException, NoSuchAlgorithmException {
-        return createCertRequest(keypair, DEFAULT_PKCS10_SIGNATURE_ALGORITHM, dn, DEFAULT_PKCS10_PROVIDER);
+        return createCertRequest(keypair, DEFAULT_PKCS10_SIGNATURE_ALGORITHM, dn);
     }
 
     /**
@@ -308,7 +316,6 @@ public class CertUtil {
      *
      * @param keypair
      * @param sigAlgName
-     * @param provider
      * @param dn
      * @return
      * @throws SignatureException
@@ -320,20 +327,22 @@ public class CertUtil {
     public static MyPKCS10CertRequest createCertRequest(KeyPair keypair,
                                                         String sigAlgName,
                                                         String dn,
-                                                        String provider) throws
-            InvalidKeyException,  NoSuchAlgorithmException {
-        //String sigAlg = "SHA512WithRSA";
+                                                        String organizationalUnit,
+                                                        String organizationName,
+                                                        String country) throws
+            InvalidKeyException, NoSuchAlgorithmException {
+        if (dn == null) {
+            dn = CertUtil.DEFAULT_PKCS10_DISTINGUISHED_NAME;
+        }
+        if (sigAlgName == null) {
+            sigAlgName = DEFAULT_PKCS10_SIGNATURE_ALGORITHM;
+        }
         PKCS10 pkcs10 = new PKCS10(keypair.getPublic());
 
         Signature signature = Signature.getInstance(sigAlgName);
         signature.initSign(keypair.getPrivate());
         try {
-            X500Name x500Name = null;
-            if (dn == null) {
-                x500Name = new X500Name(DEFAULT_PKCS10_DISTINGUISHED_NAME, "OU", "OU", "USA");
-            } else {
-                x500Name = new X500Name(dn, "OU", "OU", "USA");
-            }
+            X500Name x500Name = new X500Name(dn, organizationalUnit, organizationName, country);
             pkcs10.encodeAndSign(x500Name, signature);
 
             ByteArrayOutputStream bs = new ByteArrayOutputStream();
@@ -346,12 +355,20 @@ public class CertUtil {
             if (bs != null) {
                 bs.close();
             }
-        } catch (CryptoException rx) {
+        } catch (RuntimeException rx) {
             throw rx;
         } catch (Throwable th) {
             throw new CryptoException("Error creating cert request", th);
         }
         return new MySunPKCS_CR(pkcs10);
+    }
+
+    public static MyPKCS10CertRequest createCertRequest(KeyPair keypair,
+                                                        String sigAlgName,
+                                                        String dn) throws
+            InvalidKeyException, NoSuchAlgorithmException {
+        //String sigAlg = "SHA512WithRSA";
+        return createCertRequest(keypair, sigAlgName, dn, "OU", "OU", "USA");
     }
 
     /**
@@ -360,6 +377,7 @@ public class CertUtil {
     public static class MySunPKCS_CR extends MyPKCS10CertRequest {
         /**
          * Create the cert request from a DER-encoded byte array.
+         *
          * @param derEncoded
          */
         public MySunPKCS_CR(byte[] derEncoded) {
@@ -409,6 +427,7 @@ public class CertUtil {
 
         /**
          * Get the CN (Common Name) from the PKCS 10 cert request.
+         *
          * @return
          */
         @Override
@@ -425,6 +444,7 @@ public class CertUtil {
 
         /**
          * return the public key for the PKCS 10 cert request.
+         *
          * @return
          */
         @Override
@@ -434,6 +454,7 @@ public class CertUtil {
 
         /**
          * Return the PKCS 10 cert request encoded as bytes.
+         *
          * @return
          */
         @Override
@@ -444,6 +465,7 @@ public class CertUtil {
 
     /**
      * Get the DN (distinguished name) from the X 509 certificate.
+     *
      * @param x509Certificate
      * @return
      */
@@ -471,6 +493,7 @@ public class CertUtil {
 
     /**
      * Return the email (if any) from an X 509 certificate.
+     *
      * @param x509Certificate
      * @return
      */
@@ -493,19 +516,20 @@ public class CertUtil {
      * Command line utility to generate a keypair with a given DN. This is intended for low level
      * debugging, not public consumption. This is a very stupid utility but much more convenient
      * than using openSSL or some other such command line utility.
+     *
      * @param args
      */
-    public static void main(String[] args){
-        if(args.length != 1){
+    public static void main(String[] args) {
+        if (args.length != 1) {
             System.out.println("Usage: This accepts a single argument that is the DN for a cert request. It returns the pem encoded " +
                     "cert request (but not the private key)");
             return;
         }
-        try{
+        try {
             KeyPair keyPair = KeyUtil.generateKeyPair();
             MyPKCS10CertRequest cr = CertUtil.createCertRequest(keyPair, args[0]);
             System.out.println(CertUtil.fromCertReqToString(cr));
-        }catch(Throwable t){
+        } catch (Throwable t) {
 
             t.printStackTrace();
         }
