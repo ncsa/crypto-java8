@@ -6,9 +6,14 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.swing.plaf.IconUIResource;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A set of utilities to encrypt or decrypt a string using public/private keys.
@@ -24,6 +29,7 @@ public class DecryptUtils {
      * @throws Throwable
      */
     public static void main(String[] args) throws Throwable {
+        System.out.println(listCiphers());
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(2048);
         KeyPair keyPair = kpg.generateKeyPair();
@@ -203,5 +209,15 @@ public class DecryptUtils {
         }
 
     }
-
+  public static List<String> listCiphers(){
+      Set<String> algs = new TreeSet<>();
+      for (Provider provider : Security.getProviders()) {
+                    provider.getServices().stream()
+                  .filter(s -> "Cipher".equals(s.getType()))
+                  .map(Provider.Service::getAlgorithm)
+                  .forEach(algs::add);
+      }
+      List<String> ciphers = new ArrayList<>(algs);
+      return ciphers;
+  }
 }

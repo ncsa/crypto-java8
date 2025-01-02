@@ -31,6 +31,9 @@ public class KeyUtil {
     public static final String BEGIN_RSA_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----";
     public static final String END_RSA_PRIVATE_KEY = "-----END RSA PRIVATE KEY-----";
 
+    public static final String BEGIN_RSA_PUBLIC_KEY = "-----BEGIN RSA PUBLIC KEY-----";
+    public static final String END_RSA_PUBLIC_KEY = "-----END RSA PUBLIC KEY-----";
+
     public static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
     public static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
 
@@ -75,8 +78,16 @@ public class KeyUtil {
         byte[] bytes = privateKey.getEncoded();
         return PEMFormatUtil.delimitBody(PEMFormatUtil.bytesToChunkedString(bytes), BEGIN_RSA_PRIVATE_KEY, END_RSA_PRIVATE_KEY);
     }
+    public static String toPKCS1PEM(PublicKey publicKey) throws IOException {
+        byte[] bytes = publicKey.getEncoded();
+        return PEMFormatUtil.delimitBody(PEMFormatUtil.bytesToChunkedString(bytes), BEGIN_RSA_PUBLIC_KEY, END_RSA_PUBLIC_KEY);
+    }
+    public static void toPKCS1PEM(PublicKey publicKey, OutputStream out) throws IOException {
+        PrintStream printStream = new PrintStream(out);
+        printStream.print(toPKCS1PEM(publicKey));
+        printStream.flush();
 
-
+    }
     /**
      * Use a reader to ingest a PKCS 1 private key.
      * @param reader
@@ -116,6 +127,32 @@ public class KeyUtil {
                 new RSAPrivateCrtKeySpec(modulus, publicExp, privateExp, prime1, prime2, exp1, exp2, crtCoef);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         return keyFactory.generatePrivate(rsaPrivateCrtKeySpec);
+    }
+
+    public static PublicKey fromPublicPKCS1PEM(Reader reader) throws Exception {
+        return fromPublicPKCS1PEM(PEMFormatUtil.readerToString(reader));
+    }
+    public static PublicKey fromPublicPKCS1PEM(String pem) throws Exception {
+        byte[] bytes = PEMFormatUtil.getBodyBytes(pem, BEGIN_RSA_PUBLIC_KEY, END_RSA_PUBLIC_KEY);
+
+        DerInputStream derReader = new DerInputStream(bytes);
+        DerValue[] sequence = derReader.getSequence(0);
+        // skip the version at index 0
+        //  Note that getting the big integers this way automatically corrects so that the result is always positive.
+        // We have do this manually in the JSONWebKeyUtil.
+        BigInteger modulus = sequence[0].getBigInteger();
+        BigInteger publicExp = sequence[1].getBigInteger();
+/*        BigInteger privateExp = sequence[3].getBigInteger();
+        BigInteger prime1 = sequence[4].getBigInteger();
+        BigInteger prime2 = sequence[5].getBigInteger();
+        BigInteger exp1 = sequence[6].getBigInteger();
+        BigInteger exp2 = sequence[7].getBigInteger();
+        BigInteger crtCoef = sequence[8].getBigInteger();*/
+
+        RSAPublicKeySpec rsaPublicKeySpec =
+                new RSAPublicKeySpec(modulus, publicExp);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(rsaPublicKeySpec);
     }
 
     /**
@@ -475,10 +512,10 @@ public class KeyUtil {
         return key;
     }
 
-    public static void main(String[] args) {
-        setKeyAlgorithm("EC");
-        KeyPair keyPair = generateKeyPair();
-        System.out.println(keyPair);
+    public static void main(String[] args) throws Throwable{
+        fromPublicPKCS1PEM(new FileReader("/tmp/xxx.pem"));
+        PublicKey pKey1 = fromPublicPKCS1PEM(new FileReader("/tmp/pkcs1_public.pem"));
+        toPKCS1PEM(pKey1, new FileOutputStream("/tmp/xxx.pem"));
     }
 
 }

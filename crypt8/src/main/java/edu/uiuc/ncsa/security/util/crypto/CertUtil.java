@@ -62,7 +62,7 @@ public class CertUtil {
      * @throws CertificateException
      */
     public static X509Certificate[] getX509CertsFromStringList(
-            String[] certList, String[] nameList)  {
+            String[] certList, String[] nameList) {
         Collection<X509Certificate> c = new ArrayList<X509Certificate>(
                 certList.length);
         for (int i = 0; i < certList.length; i++) {
@@ -284,7 +284,7 @@ public class CertUtil {
      * @throws IOException
      */
     public static MyPKCS10CertRequest createCertRequest(KeyPair keypair, String dn) throws InvalidKeyException, NoSuchAlgorithmException {
-        return createCertRequest(keypair, DEFAULT_PKCS10_SIGNATURE_ALGORITHM, dn, DEFAULT_PKCS10_PROVIDER);
+        return createCertRequest(keypair, DEFAULT_PKCS10_SIGNATURE_ALGORITHM, dn);
     }
 
     /**
@@ -308,7 +308,6 @@ public class CertUtil {
      *
      * @param keypair
      * @param sigAlgName
-     * @param provider
      * @param dn
      * @return
      * @throws SignatureException
@@ -320,20 +319,22 @@ public class CertUtil {
     public static MyPKCS10CertRequest createCertRequest(KeyPair keypair,
                                                         String sigAlgName,
                                                         String dn,
-                                                        String provider) throws
-            InvalidKeyException,  NoSuchAlgorithmException {
-        //String sigAlg = "SHA512WithRSA";
+                                                        String organizationalUnit,
+                                                        String organizationName,
+                                                        String country) throws
+            InvalidKeyException, NoSuchAlgorithmException {
+        if (dn == null) {
+            dn = CertUtil.DEFAULT_PKCS10_DISTINGUISHED_NAME;
+        }
+        if (sigAlgName == null) {
+            sigAlgName = DEFAULT_PKCS10_SIGNATURE_ALGORITHM;
+        }
         PKCS10 pkcs10 = new PKCS10(keypair.getPublic());
 
         Signature signature = Signature.getInstance(sigAlgName);
         signature.initSign(keypair.getPrivate());
         try {
-            X500Name x500Name = null;
-            if (dn == null) {
-                x500Name = new X500Name(DEFAULT_PKCS10_DISTINGUISHED_NAME, "OU", "OU", "USA");
-            } else {
-                x500Name = new X500Name(dn, "OU", "OU", "USA");
-            }
+            X500Name x500Name = new X500Name(dn, organizationalUnit, organizationName, country);
             pkcs10.encodeAndSign(x500Name, signature);
 
             ByteArrayOutputStream bs = new ByteArrayOutputStream();
@@ -346,12 +347,20 @@ public class CertUtil {
             if (bs != null) {
                 bs.close();
             }
-        } catch (CryptoException rx) {
+        } catch (RuntimeException rx) {
             throw rx;
         } catch (Throwable th) {
             throw new CryptoException("Error creating cert request", th);
         }
         return new MySunPKCS_CR(pkcs10);
+    }
+
+    public static MyPKCS10CertRequest createCertRequest(KeyPair keypair,
+                                                        String sigAlgName,
+                                                        String dn) throws
+            InvalidKeyException, NoSuchAlgorithmException {
+        //String sigAlg = "SHA512WithRSA";
+        return createCertRequest(keypair, sigAlgName, dn, "OU", "OU", "USA");
     }
 
     /**
@@ -360,6 +369,7 @@ public class CertUtil {
     public static class MySunPKCS_CR extends MyPKCS10CertRequest {
         /**
          * Create the cert request from a DER-encoded byte array.
+         *
          * @param derEncoded
          */
         public MySunPKCS_CR(byte[] derEncoded) {
@@ -495,17 +505,17 @@ public class CertUtil {
      * than using openSSL or some other such command line utility.
      * @param args
      */
-    public static void main(String[] args){
-        if(args.length != 1){
+    public static void main(String[] args) {
+        if (args.length != 1) {
             System.out.println("Usage: This accepts a single argument that is the DN for a cert request. It returns the pem encoded " +
                     "cert request (but not the private key)");
             return;
         }
-        try{
+        try {
             KeyPair keyPair = KeyUtil.generateKeyPair();
             MyPKCS10CertRequest cr = CertUtil.createCertRequest(keyPair, args[0]);
             System.out.println(CertUtil.fromCertReqToString(cr));
-        }catch(Throwable t){
+        } catch (Throwable t) {
 
             t.printStackTrace();
         }

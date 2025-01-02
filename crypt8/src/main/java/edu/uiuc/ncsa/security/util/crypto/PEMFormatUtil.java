@@ -90,7 +90,8 @@ public class PEMFormatUtil {
     }
 
     /**
-     * Fixes OAUTH-212: upgrade to version 1.10 of apache commons no longer chunks strings, so PEM format of
+     * Fixes OAUTH-212: upgrade to version 1.10 of apache commons no longer chunks strings (writes them at 76 characters
+     * per line, except the last line), so PEM format of
      * all keys and certs are no longer readable by Open SSL, e.g.
      * @param body
      * @return
