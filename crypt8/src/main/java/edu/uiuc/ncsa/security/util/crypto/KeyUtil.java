@@ -301,6 +301,14 @@ public class KeyUtil {
         writer.flush();
     }
 
+    /*
+    Used in MyProxyLogon.
+     */
+    public static void toPKCS8PEM(PrivateKey privateKey, OutputStream os) throws IOException {
+        PrintStream printStream = new PrintStream(os);
+        printStream.print(toPKCS8PEM(privateKey));
+        printStream.flush();
+    }
     /**
      * This takes the PEM encoding of a PKCS 8 format private key, strips the header and footer, converts
      * to bytes then invokes {@link #fromPKCS8DER(byte[])}.

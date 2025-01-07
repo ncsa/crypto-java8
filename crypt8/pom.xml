@@ -5,7 +5,7 @@
     <parent>
         <artifactId>crypto-java8</artifactId>
         <groupId>edu.uiuc.ncsa.security</groupId>
-        <version>5.4-SNAPSHOT</version>
+        <version>5.4.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -42,7 +42,7 @@
                             <artifactId>maven-gpg-plugin</artifactId>
                             <version>1.6</version>
                             <configuration>
-                                <skip>true</skip>
+                                <skip>false</skip>
                             </configuration>
                             <executions>
                                 <execution>
