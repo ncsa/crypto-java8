@@ -1,11 +1,14 @@
 package edu.uiuc.ncsa.security.util.crypto;
 
+import sun.security.rsa.RSAPrivateCrtKeyImpl;
 import sun.security.util.DerInputStream;
+import sun.security.util.DerOutputStream;
 import sun.security.util.DerValue;
 
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
+import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -16,12 +19,9 @@ import java.util.concurrent.ThreadLocalRandom;
  * <li>Generate key pairs</li>
  * <Li>Read and write PKCS 8 format private keys</li>
  * <li>Read and write X509 encoded public keys</li>
- * <li>Write PKCS 1 private keys</li>
+ * <li>Read PKCS 1 private keys</li>
  * </ul>
- * There is no call to read in a PKCS 1 format pem; these are private keys that start with
- * <code>-----BEGIN RSA PRIVATE KEY-----</code>. This requires laborious parsing of ASN 1 objects and so
- * far there is not much of a need for it. Java much prefers the newer and more secure PKCS 8 format which you should
- * use if possible.
+ * There is no call to write in a PKCS 1 format pem; The standard encoding now for saving keys is PKCS 8.
  * <p>All methods are static and if you need something other than the defaults, set them before first use.
  * <p>Created by Jeff Gaynor<br>
  * on Jun 15, 2010 at  4:51:25 PM
@@ -40,54 +40,7 @@ public class KeyUtil {
     public static final String BEGIN_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----";
     public static final String END_PUBLIC_KEY = "-----END PUBLIC KEY-----";
 
-    /**
-     * Write a PEM format PKCS1 private using a writer.
-     *
-     * @param privateKey
-     * @param writer
-     * @throws IOException
-     */
 
-    public static void toPKCS1PEM(PrivateKey privateKey, Writer writer) throws IOException {
-        String pem = toPKCS1PEM(privateKey);
-        writer.write(pem);
-        writer.flush();
-    }
-
-    /**
-     * Write PEM format PKCS 1 private key using a stream
-     * @param privateKey
-     * @param out
-     * @throws IOException
-     */
-    public static void toPKCS1PEM(PrivateKey privateKey, OutputStream out) throws IOException {
-        PrintStream printStream = new PrintStream(out);
-        printStream.print(toPKCS1PEM(privateKey));
-        printStream.flush();
-
-    }
-
-
-    /**
-     * Take a private key and put it into PKCS 1 format. These are used, e.g., by OpenSSL.
-     *
-     * @return
-     * @throws IOException
-     */
-    public static String toPKCS1PEM(PrivateKey privateKey) throws IOException {
-        byte[] bytes = privateKey.getEncoded();
-        return PEMFormatUtil.delimitBody(PEMFormatUtil.bytesToChunkedString(bytes), BEGIN_RSA_PRIVATE_KEY, END_RSA_PRIVATE_KEY);
-    }
-    public static String toPKCS1PEM(PublicKey publicKey) throws IOException {
-        byte[] bytes = publicKey.getEncoded();
-        return PEMFormatUtil.delimitBody(PEMFormatUtil.bytesToChunkedString(bytes), BEGIN_RSA_PUBLIC_KEY, END_RSA_PUBLIC_KEY);
-    }
-    public static void toPKCS1PEM(PublicKey publicKey, OutputStream out) throws IOException {
-        PrintStream printStream = new PrintStream(out);
-        printStream.print(toPKCS1PEM(publicKey));
-        printStream.flush();
-
-    }
     /**
      * Use a reader to ingest a PKCS 1 private key.
      * @param reader
@@ -98,6 +51,47 @@ public class KeyUtil {
         return fromPKCS1PEM(PEMFormatUtil.readerToString(reader));
     }
 
+    /*
+    From the spec: https://datatracker.ietf.org/doc/html/rfc3447#appendix-A.1.2
+     An RSA private key should be represented with the ASN.1 type
+   RSAPrivateKey:
+
+      RSAPrivateKey ::= SEQUENCE {
+          version           Version,
+          modulus           INTEGER,  -- n
+          publicExponent    INTEGER,  -- e
+          privateExponent   INTEGER,  -- d
+          prime1            INTEGER,  -- p
+          prime2            INTEGER,  -- q
+          exponent1         INTEGER,  -- d mod (p-1)
+          exponent2         INTEGER,  -- d mod (q-1)
+          coefficient       INTEGER,  -- (inverse of q) mod p
+          otherPrimeInfos   OtherPrimeInfos OPTIONAL
+      }
+
+   The fields of type RSAPrivateKey have the following meanings:
+
+    * version is the version number, for compatibility with future
+      revisions of this document.  It shall be 0 for this version of the
+      document, unless multi-prime is used, in which case it shall be 1.
+
+            Version ::= INTEGER { two-prime(0), multi(1) }
+               (CONSTRAINED BY
+               {-- version must be multi if otherPrimeInfos present --})
+
+    * modulus is the RSA modulus n.
+    * publicExponent is the RSA public exponent e.
+    * privateExponent is the RSA private exponent d.
+    * prime1 is the prime factor p of n.
+    * prime2 is the prime factor q of n.
+    * exponent1 is d mod (p - 1).
+    * exponent2 is d mod (q - 1).
+    * coefficient is the CRT coefficient q^(-1) mod p.
+    * otherPrimeInfos contains the information for the additional primes
+      r_3, ..., r_u, in order.  It shall be omitted if version is 0 and
+      shall contain at least one instance of OtherPrimeInfo if version
+      is 1.
+     */
 
     /**
      * Read a PKCS 1 format pem and return the private key.  Read the <a href="https://www.rfc-editor.org/rfc/rfc3447#page-44">RSA spec</a>
@@ -122,7 +116,6 @@ public class KeyUtil {
         BigInteger exp1 = sequence[6].getBigInteger();
         BigInteger exp2 = sequence[7].getBigInteger();
         BigInteger crtCoef = sequence[8].getBigInteger();
-
         RSAPrivateCrtKeySpec rsaPrivateCrtKeySpec =
                 new RSAPrivateCrtKeySpec(modulus, publicExp, privateExp, prime1, prime2, exp1, exp2, crtCoef);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -132,6 +125,10 @@ public class KeyUtil {
     public static PublicKey fromPublicPKCS1PEM(Reader reader) throws Exception {
         return fromPublicPKCS1PEM(PEMFormatUtil.readerToString(reader));
     }
+    /*
+      Reading a PKCS 1 public key using OpenSSL
+      openssl rsa -RSAPublicKey_in -in pkcs1_public.pem -noout -text
+     */
     public static PublicKey fromPublicPKCS1PEM(String pem) throws Exception {
         byte[] bytes = PEMFormatUtil.getBodyBytes(pem, BEGIN_RSA_PUBLIC_KEY, END_RSA_PUBLIC_KEY);
 
@@ -142,13 +139,6 @@ public class KeyUtil {
         // We have do this manually in the JSONWebKeyUtil.
         BigInteger modulus = sequence[0].getBigInteger();
         BigInteger publicExp = sequence[1].getBigInteger();
-/*        BigInteger privateExp = sequence[3].getBigInteger();
-        BigInteger prime1 = sequence[4].getBigInteger();
-        BigInteger prime2 = sequence[5].getBigInteger();
-        BigInteger exp1 = sequence[6].getBigInteger();
-        BigInteger exp2 = sequence[7].getBigInteger();
-        BigInteger crtCoef = sequence[8].getBigInteger();*/
-
         RSAPublicKeySpec rsaPublicKeySpec =
                 new RSAPublicKeySpec(modulus, publicExp);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -247,7 +237,8 @@ public class KeyUtil {
     }
 
     /**
-     * Convert public key to PEM format, returning the result as a string.
+     * Convert public key to PEM format, returning the result as a string. X509 public key is really PKCS8 public key
+     * format
      * @param publicKey
      * @return
      */
@@ -256,43 +247,11 @@ public class KeyUtil {
         return PEMFormatUtil.delimitBody(PEMFormatUtil.bytesToChunkedString(bytes), BEGIN_PUBLIC_KEY, END_PUBLIC_KEY);
     }
 
-    /**
-     * DER encoding for the private key.
-     *
-     * @param privateKey
-     * @return
-     */
-    public static byte[] toDER(PrivateKey privateKey) {
-        return privateKey.getEncoded();
+    public static String toPKCS8PEM(PublicKey publicKey){
+        return toX509PEM(publicKey);
     }
-
-    /**
-     * DER encode a public key.
-     * @param publicKey
-     * @return
-     */
-    public static byte[] toDER(PublicKey publicKey) {
-        return publicKey.getEncoded();
-    }
-
-
-    /**
-     * DER encode the private key of a {@link KeyPair}.
-     * @param keyPair
-     * @return
-     */
-    public static byte[] privateToDER(KeyPair keyPair) {
-        return toDER(keyPair.getPrivate());
-    }
-
-    /**
-     * DER encode the public key in a {@link KeyPair}.
-     * @param keyPair
-     * @return
-     */
-
-    public static byte[] publicToDER(KeyPair keyPair) {
-        return toDER(keyPair.getPublic());
+    public static void toPKCS8PEM(PublicKey publicKey, Writer writer) throws IOException {
+        toX509PEM(publicKey, writer);
     }
 
     /**
@@ -495,7 +454,12 @@ public class KeyUtil {
     public static PublicKey fromX509PEM(Reader reader) throws IOException {
         return fromX509PEM(PEMFormatUtil.readerToString(reader));
     }
-
+    public static PublicKey fromPublicPKCS8PEM(Reader reader) throws IOException {
+        return fromX509PEM(reader);
+    }
+    public static PublicKey fromPublicPKCS8PEM(String pemKey) throws IOException {
+        return fromX509PEM(pemKey);
+    }
     /**
      * Generate a symmetric key. Note that the length is <b>not</b> bits
      * but bytes. E.g to generate a symmetric key of 4096 bits you would call
@@ -513,9 +477,15 @@ public class KeyUtil {
     }
 
     public static void main(String[] args) throws Throwable{
-        fromPublicPKCS1PEM(new FileReader("/tmp/xxx.pem"));
-        PublicKey pKey1 = fromPublicPKCS1PEM(new FileReader("/tmp/pkcs1_public.pem"));
-        toPKCS1PEM(pKey1, new FileOutputStream("/tmp/xxx.pem"));
+        // Round trip tests
+        //PrivateKey pKey = fromPKCS1PEM(new FileReader("/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/crypto/pkcs1.pem"));
+        PrivateKey pKey = fromPKCS1PEM(new FileReader("/tmp/pkcs1.pem"));
+        toPKCS8PEM(pKey, new FileWriter("/tmp/yyy.pem"));
+        pKey = fromPKCS8PEM(new FileReader("/tmp/yyy.pem"));
+        System.out.println(pKey);
+        PublicKey pKey1 = fromPublicPKCS1PEM(new FileReader("/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/crypto/pkcs1_public.pem"));
+        toX509PEM(pKey1, new FileWriter("/tmp/xxx.pem"));
+         pKey1 = fromX509PEM(new FileReader("/tmp/xxx.pem"));
     }
 
 }

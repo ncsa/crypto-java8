@@ -80,7 +80,7 @@ public class DecryptUtils {
     }
 
     public static String encryptPublic(String type, PublicKey publicKey, String s) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException {
-        Cipher encryptCipher = Cipher.getInstance(type.equals("RSA")?"RSA":"AES/GCM/NoPadding");
+        Cipher encryptCipher = Cipher.getInstance(type.equals("RSA") ? "RSA" : "AES/GCM/NoPadding");
         encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey); // encrypt with the public key
         byte[] encryptedMessageBytes = encryptCipher.doFinal(s.getBytes(StandardCharsets.UTF_8));
         String encoded = Base64.encodeBase64URLSafeString(encryptedMessageBytes);
@@ -173,7 +173,7 @@ public class DecryptUtils {
         int len = Math.max(key.length, ss.length);
         byte[] out = new byte[ss.length];
         for (int i = 0; i < ss.length; i++) {
-            out[i] = (byte) (ss[i] ^ key[i % key.length]);
+            out[i] = (byte) (ss[i] ^ key[i % key.length]); // bit-wise XOR
         }
         return out;
     }
@@ -209,15 +209,16 @@ public class DecryptUtils {
         }
 
     }
-  public static List<String> listCiphers(){
-      Set<String> algs = new TreeSet<>();
-      for (Provider provider : Security.getProviders()) {
-                    provider.getServices().stream()
-                  .filter(s -> "Cipher".equals(s.getType()))
-                  .map(Provider.Service::getAlgorithm)
-                  .forEach(algs::add);
-      }
-      List<String> ciphers = new ArrayList<>(algs);
-      return ciphers;
-  }
+
+    public static List<String> listCiphers() {
+        Set<String> algs = new TreeSet<>();
+        for (Provider provider : Security.getProviders()) {
+            provider.getServices().stream()
+                    .filter(s -> "Cipher".equals(s.getType()))
+                    .map(Provider.Service::getAlgorithm)
+                    .forEach(algs::add);
+        }
+        List<String> ciphers = new ArrayList<>(algs);
+        return ciphers;
+    }
 }
